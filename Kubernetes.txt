@@ -1,0 +1,108 @@
+Kubernetes Notes:
+
+-> We Create Manifest. (JSON/.yml)
+-> Apply this to cluster (to master) to bring into desired state.
+-> Pod runs on node, which is controlled by master.
+
+Role of Master Node:
+
+Kubernetes cluster contains Containers running on Bare Metal/VM Instances/Cloud instances/all mix.
+-> Kubernetes designates one or more of these as master and all other as workers.
+-> The master is now going to run set of k8s processes. These processes will ensure smooth functioning
+of cluster. These processes are called "Control Plane"
+-> Can be Multi-master for high availability.
+-> Master runs control plane to run cluster smoothly.
+
+Components of Control Plane(Master):
+1. Kube-API Server (For all communications)
+-> This API-Server interacts directly with user (i.e we apply yml or json manifest to Kube-APIServer)
+-> This Kube-APIServer is meant to scale automatically as per load.
+-> Kube API-Server is front-end of control - plane.
+
+2. etcd
+-> Stores metadata and status of cluster.
+-> etcd is Consistent and high-available store (key-value store)
+-> Source of touch for cluster state (info about state of cluster)
+   etcd has following features:
+  1.Fully Replicated - The Entire state is available on every node in the cluster.
+  2.Secure - Implements automatic TLS with Optional Client-Certificate authentication.
+  3.Fast - Benchmarked at 10,000 writes per second.
+  
+3. Kube-Scheduler (action): 
+-> When users make request for the creation and Management of Pods, Kube-Scheduler id going to take action on 
+these requests.
+-> Handles Pod Creation and Management
+-> Kube-Scheduler match/assign any node to create and run pods.
+-> A Scheduler watches for newly created Pods that have no node assigned for every Pod that the Scheduker discovers,
+the scheduler becomes responsible for finding best node for that pod to run on.
+-> Scheduler gets the information for hardware configuration from COnfiguration files and Schedules the Pods on
+nodes accordingly.
+
+4. Controller-Manager:
+-> Makes sure actual state of clusters matches to desired state.
+Two possible choices for controller manager:
+i) If k8s on cloud, then it will be cloud-controller-manager.
+ii) If k8s on non-cloud, then it will be kube-controller-manager.
+
+Components on Master that runs Controller
+Node-Controller -> For checking the cloud procider to determine if a node has been detected in the cloud after it stops responding.
+Route-COntroller -> Responsible for setting up network, routes on your cloud.
+Service Controller -> Responsible for load Balances on your cloud against services of type load Balancer.
+Volume COntroller -> For creating, attaching and maintaining volumes and interacting with the cloud provider to 
+orchestrate volume.
+
+Nodes (Kubelet and Container engine):
+Node is going to run 3 important piece of software/process.
+1. Kubelet
+-> Agent running on the node.
+-> Listens to kubernetes master (eg: - pod creation request)
+-> use Port 10255
+-> Send success/fail reports to master
+
+2. Container Engine
+-> eg: Docker, Rocket, etc
+-> works with kubelet
+-> Pulling images
+-> start/stop Containers
+-> Exposing containers on ports specified in Manifest.
+
+3. Kube-Proxy
+-> Assigns IP to each Pod
+-> It is required to assign IP addresses to pods(dynamic)
+-> Kube-proxy runs on each node and this makes sure that each pod will get its own unique IP address.
+
+These 3 components collectively makes a 'Node'.
+
+POD:
+-> Smallest Unit in Kubernetes
+-> POD is a group of one or more that are deployed together on the same host.
+-> A Cluster is a group of Nodes.
+-> A cluster has atleast 1 worker node and 1 master Node.
+-> In Kubernetes, the Control unit is Pod, not Containers.
+-> Consists of one or more tightly coupled containers
+-> POD runs on node, which is controlled by master.
+-> Kubernetes only knows about PODs(does not know about individual container)
+-> Cannot start Containers without a POD.
+-> One POD usually contains one container.
+
+Multi-Container PODs:
+-> Share access to memory space
+-> Connect to each other using localhost.
+-> Share access to the same volume
+-> Containers within pod are deployed in an all-or-nothing manner
+-> Entire Pod is Hosted on the same node (scheduler will decide about which node)
+
+PODs Limitations:
+-> No auto-healing or auto-scaling.
+-> POD crashes
+
+Higher Level Kubernetes Objects:
+Replication set -> Scaling and healing
+Deployment -> Versioning and Rollback
+Service -> static(Non-ephemeral) IP and networking
+Volume -> Non-ephemeral storage.
+
+IMPORTANT:
+Kubectl -> single cloud
+Kubeadm -> on premise
+Kubefed -> federated (mix)
